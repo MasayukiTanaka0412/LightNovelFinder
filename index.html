@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ライトノベル100選おすすめ診断</title>
+    <style>
+      :root {
+        --bg: #f5f7ff;
+        --card: #ffffff;
+        --text: #1a2133;
+        --sub: #5a6478;
+        --accent: #4a6cff;
+        --accent-weak: #e9edff;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic", "Meiryo", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 20px;
+      }
+      .app {
+        width: min(860px, 100%);
+        background: var(--card);
+        border-radius: 16px;
+        box-shadow: 0 12px 32px rgba(26, 33, 51, 0.12);
+        padding: 24px;
+      }
+      h1 { margin: 0 0 8px; font-size: clamp(1.45rem, 2.8vw, 2rem); }
+      .lead { margin: 0 0 20px; color: var(--sub); line-height: 1.6; }
+      .progress { font-weight: 700; margin-bottom: 14px; }
+      .question { background: #f3f6ff; border-radius: 12px; padding: 18px; }
+      .question h2 { margin: 0; font-size: clamp(1.05rem, 2.3vw, 1.35rem); }
+      .actions { display: flex; gap: 10px; margin-top: 18px; }
+      button {
+        border: none; border-radius: 999px; padding: 11px 18px;
+        font-size: 1rem; font-weight: 700; cursor: pointer;
+      }
+      .yes { background: var(--accent); color: #fff; }
+      .no { background: #e7ebf5; color: var(--text); }
+      .restart { margin-top: 18px; background: var(--accent-weak); color: #2d46b6; }
+      .result {
+        margin-top: 14px;
+        border-radius: 12px;
+        background: #f8f9ff;
+        padding: 16px;
+      }
+      .result h3 { margin: 0 0 8px; }
+      .badge {
+        display: inline-block;
+        margin-left: 8px;
+        font-size: 0.8rem;
+        color: #3551c9;
+        background: #e3eaff;
+        border-radius: 999px;
+        padding: 3px 8px;
+      }
+      ul { margin: 10px 0 0; padding-left: 1.2rem; }
+      li { margin-bottom: 6px; }
+      .footnote { margin-top: 12px; color: var(--sub); font-size: 0.92rem; }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <h1>10問でわかる！ライトノベル100選おすすめ診断</h1>
+      <p class="lead">
+        Yes/Noで10問に答えると、「このライトノベルがすごい！」掲載・受賞常連作を中心にした
+        100作品データからあなた向けのおすすめを提案します。
+      </p>
+
+      <div id="quizArea">
+        <p class="progress" id="progress"></p>
+        <section class="question">
+          <h2 id="questionText"></h2>
+          <div class="actions">
+            <button class="yes" id="yesBtn" type="button">Yes</button>
+            <button class="no" id="noBtn" type="button">No</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="result" id="resultArea" hidden>
+        <h3 id="title"></h3>
+        <p id="reason"></p>
+        <ul id="topList"></ul>
+        <p class="footnote" id="meta"></p>
+        <button class="restart" id="restartBtn" type="button">もう一度診断する</button>
+      </section>
+    </main>
+
+    <script>
+      const questions = [
+        { text: "異世界・ファンタジー世界が舞台の作品を読みたいですか？", key: "isekai" },
+        { text: "恋愛要素が強めの作品が好みですか？", key: "romance" },
+        { text: "学園を舞台にした物語に惹かれますか？", key: "school" },
+        { text: "頭脳戦・心理戦が多い作品を読みたいですか？", key: "mind" },
+        { text: "シリアスで重厚な展開でも楽しめますか？", key: "dark" },
+        { text: "笑えるコメディ要素は重要ですか？", key: "comedy" },
+        { text: "長編シリーズ（10巻以上）でもOKですか？", key: "long" },
+        { text: "成り上がり・成長のカタルシスを重視しますか？", key: "rise" },
+        { text: "ミステリや謎解きがある作品が好きですか？", key: "mystery" },
+        { text: "読後感が温かい作品を求めますか？", key: "warm" }
+      ];
+
+      const works = [
+        { title: "Re:ゼロから始める異世界生活", tags: ["isekai", "dark", "long", "rise"] },
+        { title: "この素晴らしい世界に祝福を！", tags: ["isekai", "comedy", "long"] },
+        { title: "無職転生 〜異世界行ったら本気だす〜", tags: ["isekai", "rise", "long", "dark"] },
+        { title: "本好きの下剋上", tags: ["isekai", "warm", "rise", "long"] },
+        { title: "転生したらスライムだった件", tags: ["isekai", "rise", "comedy", "long"] },
+        { title: "オーバーロード", tags: ["isekai", "dark", "long"] },
+        { title: "幼女戦記", tags: ["isekai", "dark", "mind", "long"] },
+        { title: "盾の勇者の成り上がり", tags: ["isekai", "rise", "dark", "long"] },
+        { title: "ありふれた職業で世界最強", tags: ["isekai", "rise", "dark", "long"] },
+        { title: "乙女ゲームの破滅フラグしかない悪役令嬢に転生してしまった…", tags: ["isekai", "romance", "comedy", "warm"] },
+        { title: "痛いのは嫌なので防御力に極振りしたいと思います。", tags: ["isekai", "comedy", "warm"] },
+        { title: "蜘蛛ですが、なにか？", tags: ["isekai", "comedy", "dark", "rise"] },
+        { title: "異世界迷宮でハーレムを", tags: ["isekai", "romance", "dark"] },
+        { title: "骸骨騎士様、只今異世界へお出掛け中", tags: ["isekai", "comedy", "warm"] },
+        { title: "聖女の魔力は万能です", tags: ["isekai", "romance", "warm"] },
+        { title: "薬屋のひとりごと", tags: ["mystery", "mind", "warm", "long"] },
+        { title: "ようこそ実力至上主義の教室へ", tags: ["school", "mind", "dark", "long"] },
+        { title: "やはり俺の青春ラブコメはまちがっている。", tags: ["school", "romance", "mind", "long"] },
+        { title: "青春ブタ野郎シリーズ", tags: ["school", "romance", "mystery", "warm"] },
+        { title: "ソードアート・オンライン", tags: ["isekai", "romance", "long", "rise"] },
+        { title: "アクセル・ワールド", tags: ["school", "isekai", "rise", "long"] },
+        { title: "灼眼のシャナ", tags: ["school", "romance", "dark", "long"] },
+        { title: "とある魔術の禁書目録", tags: ["school", "dark", "long"] },
+        { title: "とある科学の超電磁砲", tags: ["school", "comedy", "dark", "long"] },
+        { title: "デュラララ!!", tags: ["mystery", "dark", "comedy", "long"] },
+        { title: "バッカーノ!", tags: ["mystery", "dark", "comedy"] },
+        { title: "狼と香辛料", tags: ["romance", "mind", "warm", "long"] },
+        { title: "キノの旅", tags: ["mystery", "dark", "warm", "long"] },
+        { title: "スレイヤーズ", tags: ["comedy", "isekai", "long"] },
+        { title: "フルメタル・パニック！", tags: ["school", "comedy", "romance", "long"] },
+        { title: "涼宮ハルヒシリーズ", tags: ["school", "mystery", "comedy", "long"] },
+        { title: "バカとテストと召喚獣", tags: ["school", "comedy", "romance"] },
+        { title: "生徒会の一存", tags: ["school", "comedy", "romance"] },
+        { title: "ゼロの使い魔", tags: ["school", "isekai", "romance", "long"] },
+        { title: "緋弾のアリア", tags: ["school", "comedy", "romance", "long"] },
+        { title: "IS〈インフィニット・ストラトス〉", tags: ["school", "romance", "comedy"] },
+        { title: "俺の妹がこんなに可愛いわけがない", tags: ["school", "comedy", "romance"] },
+        { title: "俺の彼女と幼なじみが修羅場すぎる", tags: ["school", "romance", "comedy"] },
+        { title: "冴えない彼女の育てかた", tags: ["school", "romance", "comedy"] },
+        { title: "エロマンガ先生", tags: ["comedy", "romance", "warm"] },
+        { title: "時々ボソッとロシア語でデレる隣のアーリャさん", tags: ["school", "romance", "comedy", "warm"] },
+        { title: "継母の連れ子が元カノだった", tags: ["school", "romance", "comedy"] },
+        { title: "千歳くんはラムネ瓶のなか", tags: ["school", "romance", "warm"] },
+        { title: "わたしの幸せな結婚", tags: ["romance", "dark", "warm"] },
+        { title: "86―エイティシックス―", tags: ["dark", "romance", "long"] },
+        { title: "Unnamed Memory", tags: ["romance", "dark", "mystery"] },
+        { title: "七つの魔剣が支配する", tags: ["school", "dark", "mystery"] },
+        { title: "嘘つきみーくんと壊れたまーちゃん", tags: ["dark", "mystery"] },
+        { title: "GOSICK", tags: ["mystery", "romance", "dark"] },
+        { title: "ビブリア古書堂の事件手帖", tags: ["mystery", "warm"] },
+        { title: "古典部シリーズ", tags: ["school", "mystery", "warm"] },
+        { title: "氷菓", tags: ["school", "mystery", "warm"] },
+        { title: "また、同じ夢を見ていた", tags: ["warm", "mystery"] },
+        { title: "君の膵臓をたべたい", tags: ["romance", "warm", "dark"] },
+        { title: "四畳半神話大系", tags: ["comedy", "mystery", "warm"] },
+        { title: "夜は短し歩けよ乙女", tags: ["comedy", "romance", "warm"] },
+        { title: "神様のメモ帳", tags: ["mystery", "dark", "school"] },
+        { title: "ココロコネクト", tags: ["school", "romance", "warm", "mystery"] },
+        { title: "僕は友達が少ない", tags: ["school", "comedy", "romance"] },
+        { title: "りゅうおうのおしごと！", tags: ["school", "rise", "comedy", "warm"] },
+        { title: "ノーゲーム・ノーライフ", tags: ["isekai", "mind", "comedy"] },
+        { title: "問題児たちが異世界から来るそうですよ？", tags: ["isekai", "comedy", "rise"] },
+        { title: "ログ・ホライズン", tags: ["isekai", "mind", "long"] },
+        { title: "ダンジョンに出会いを求めるのは間違っているだろうか", tags: ["isekai", "rise", "romance", "long"] },
+        { title: "ゴブリンスレイヤー", tags: ["dark", "isekai", "long"] },
+        { title: "魔法科高校の劣等生", tags: ["school", "mind", "long", "rise"] },
+        { title: "落第騎士の英雄譚", tags: ["school", "romance", "rise"] },
+        { title: "ハイスクールD×D", tags: ["school", "romance", "comedy", "long"] },
+        { title: "デート・ア・ライブ", tags: ["school", "romance", "comedy", "long"] },
+        { title: "六花の勇者", tags: ["mystery", "dark", "isekai"] },
+        { title: "人類は衰退しました", tags: ["comedy", "mystery", "dark"] },
+        { title: "安達としまむら", tags: ["school", "romance", "warm"] },
+        { title: "わたし、能力は平均値でって言ったよね！", tags: ["isekai", "comedy", "warm"] },
+        { title: "スパイ教室", tags: ["mystery", "mind", "school"] },
+        { title: "境界線上のホライゾン", tags: ["school", "dark", "long"] },
+        { title: "終末なにしてますか？忙しいですか？救ってもらっていいですか？", tags: ["dark", "romance", "warm"] },
+        { title: "君死にたもう流星群", tags: ["dark", "mystery"] },
+        { title: "半分の月がのぼる空", tags: ["romance", "warm", "dark"] },
+        { title: "とらドラ！", tags: ["school", "romance", "comedy", "warm"] },
+        { title: "境界の彼方", tags: ["school", "romance", "dark"] },
+        { title: "小説 君の名は。", tags: ["romance", "mystery", "warm"] },
+        { title: "小説 天気の子", tags: ["romance", "mystery", "warm"] },
+        { title: "小説 すずめの戸締まり", tags: ["romance", "mystery", "warm"] },
+        { title: "異世界食堂", tags: ["isekai", "warm", "comedy"] },
+        { title: "異世界居酒屋「のぶ」", tags: ["isekai", "warm", "comedy"] },
+        { title: "マリア様がみてる", tags: ["school", "romance", "warm", "long"] },
+        { title: "彩雲国物語", tags: ["rise", "romance", "warm", "long"] },
+        { title: "十二国記", tags: ["isekai", "dark", "rise", "long"] },
+        { title: "デルフィニア戦記", tags: ["isekai", "romance", "long"] },
+        { title: "ロードス島戦記", tags: ["isekai", "dark", "long"] },
+        { title: "ブギーポップシリーズ", tags: ["mystery", "dark", "school", "long"] },
+        { title: "Missing", tags: ["school", "mystery", "dark"] },
+        { title: "ムシウタ", tags: ["school", "dark", "mystery", "long"] },
+        { title: "レンタルマギカ", tags: ["mystery", "comedy", "long"] },
+        { title: "レジンキャストミルク", tags: ["school", "dark", "mystery"] },
+        { title: "東京レイヴンズ", tags: ["school", "dark", "mystery", "romance"] },
+        { title: "伝説の勇者の伝説", tags: ["isekai", "dark", "comedy", "long"] },
+        { title: "いつか天魔の黒ウサギ", tags: ["school", "dark", "romance"] },
+        { title: "天久鷹央の推理カルテ", tags: ["mystery", "mind", "warm"] },
+        { title: "誰が勇者を殺したか", tags: ["mystery", "dark", "isekai"] }
+      ];
+
+      const state = { index: 0, answers: {} };
+
+      const progress = document.getElementById("progress");
+      const questionText = document.getElementById("questionText");
+      const quizArea = document.getElementById("quizArea");
+      const resultArea = document.getElementById("resultArea");
+      const title = document.getElementById("title");
+      const reason = document.getElementById("reason");
+      const topList = document.getElementById("topList");
+      const meta = document.getElementById("meta");
+
+      function renderQuestion() {
+        const q = questions[state.index];
+        progress.textContent = `Q${state.index + 1} / ${questions.length}`;
+        questionText.textContent = q.text;
+      }
+
+      function answer(value) {
+        const key = questions[state.index].key;
+        state.answers[key] = value;
+        state.index += 1;
+
+        if (state.index < questions.length) {
+          renderQuestion();
+          return;
+        }
+        showResult();
+      }
+
+      function scoreWork(work) {
+        return questions.reduce((score, q) => {
+          const hasTag = work.tags.includes(q.key);
+          const answerYes = Boolean(state.answers[q.key]);
+
+          if (answerYes && hasTag) return score + 2;
+          if (!answerYes && hasTag) return score - 1;
+          return score;
+        }, 0);
+      }
+
+      function showResult() {
+        const ranked = works
+          .map((work) => ({ ...work, score: scoreWork(work) }))
+          .sort((a, b) => b.score - a.score);
+
+        const top = ranked[0];
+        const top3 = ranked.slice(0, 3);
+
+        title.innerHTML = `あなたへのおすすめ: ${top.title}<span class="badge">一致度 ${top.score}</span>`;
+        reason.textContent = "Yes回答は加点、No回答は減点して、好みに近い順で提案しています。";
+
+        topList.innerHTML = "";
+        top3.forEach((work, i) => {
+          const li = document.createElement("li");
+          li.textContent = `${i + 1}. ${work.title}（一致度 ${work.score}）`;
+          topList.appendChild(li);
+        });
+
+        meta.textContent = `対象作品数: ${works.length}作 / 参照方針: 「このライトノベルがすごい！」掲載・受賞常連作を中心に100作品で構成`;
+
+        quizArea.hidden = true;
+        resultArea.hidden = false;
+      }
+
+      function resetQuiz() {
+        state.index = 0;
+        state.answers = {};
+        quizArea.hidden = false;
+        resultArea.hidden = true;
+        renderQuestion();
+      }
+
+      document.getElementById("yesBtn").addEventListener("click", () => answer(true));
+      document.getElementById("noBtn").addEventListener("click", () => answer(false));
+      document.getElementById("restartBtn").addEventListener("click", resetQuiz);
+
+      renderQuestion();
+    </script>
+  </body>
+</html>
